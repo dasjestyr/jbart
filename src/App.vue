@@ -1,31 +1,36 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
+    <b-nav>
+      <b-nav-item><router-link to="inventory">My Items</router-link></b-nav-item>
+      <b-nav-item><router-link to="pins">My Pins</router-link></b-nav-item>
+      <b-nav-item>
+        <router-link to="matching">
+          Matches
+          <b-badge variant="success" pill>{{matchCount}}</b-badge></router-link>
+      </b-nav-item>
+      <b-nav-item><router-link to="search">Search</router-link></b-nav-item>
+      <b-nav-item v-if=isOffline><b-link v-b-modal.modal1>Sign Up</b-link></b-nav-item>
+    </b-nav>
     <router-view/>
+    <b-modal id="modal1" title="Sign Up!" hide-footer>
+        <signup></signup>
+    </b-modal>
   </div>
 </template>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-}
+<script>
+import Signup from '@/components/Signup.vue'
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+export default {
+  
+  data() {
+    return {
+      isOffline: true,
+      matchCount: 6
+    }
+  },
+  components: {
+    Signup
+  }
 }
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
+</script>
