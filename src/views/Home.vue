@@ -3,28 +3,28 @@
     <h2>Items I may be interested in</h2>
     <carousel :per-page="4" loop navigationEnabled v-if="babes.length > 0">
       <slide v-for="photo in babes" v-bind:key="photo.id">
-        <router-link to="/item">
-          <b-img rounded width="300" v-bind:src="photo.thumb" thumbnail />
-        </router-link>
+        <b-img rounded width="300" v-bind:src="photo.thumb" thumbnail @click="onImageClicked(photo.full, photo.title)" />  
+        <p>{{photo.title}}</p>      
       </slide>
     </carousel>
     <h2>Recent Listings</h2>
     <carousel :per-page="4" loop navigationEnabled v-if="aww.length > 0">
       <slide v-for="photo in aww" v-bind:key="photo.id">
-        <a v-bind:href="photo.full">
-          <b-img rounded width="300" v-bind:src="photo.thumb" thumbnail />
-        </a>
+        <b-img rounded width="300" v-bind:src="photo.thumb" thumbnail @click="onImageClicked(photo.full, photo.title)" />        
+        <p>{{photo.title}}</p>      
       </slide>
     </carousel>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+
 import {Carousel, Slide} from 'vue-carousel'
+import store from '@/store'
+import router from '@/router'
 
 export default {
+  store,
   name: 'home',
   data() {
     return {
@@ -33,6 +33,10 @@ export default {
     }
   },
   methods: {
+    onImageClicked(url, title) {
+      store.dispatch('setClickedImg', {imgSrc: url, title: title})
+      router.push({ name: 'item' })
+    },
     loadPictures() {
       let web = require('axios')
       let self = this;
@@ -40,41 +44,44 @@ export default {
       // load aminals
       web.get('https://www.reddit.com/r/aww.json')
         .then((resp) => {
-          resp.data.data.children.forEach((child) => {
-            self.aww.push({
-              thumb: child.data.thumbnail,
-              full: child.data.preview.images[0].source.url
-            })
-            
-          })
+          mapResults(self.aww, resp)
         })
 
       // load babes
       web.get('https://www.reddit.com/r/Hotness.json')
         .then((resp) => {
-          resp.data.data.children.forEach((child) => {
-            self.babes.push({
-              thumb: child.data.thumbnail,
-              full: child.data.preview.images[0].source.url
-            })
-          })
+          mapResults(self.babes, resp)
         })
     }
   },
-  created() {
-    console.log(vuex)
+  created() {    
     this.loadPictures()
   },
-  components: {
-    HelloWorld,
+  components: {    
     Carousel,
     Slide
+  }
+}
+
+function mapResults(collection, results){
+  results.data.data.children.forEach((child) => {
+    if(child.data.thumbnail === 'self')
+      return;            
+    collection.push(mapArticle(child))            
+  })
+}
+
+function mapArticle(article) {
+  return {
+    thumb: article.data.thumbnail,
+    full: article.data.preview.images[0].source.url,
+    title: article.data.title
   }
 }
 </script>
 
 <style>
   .home {
-    margin: 20px;
+    margin: 50px;
   }
 </style>
